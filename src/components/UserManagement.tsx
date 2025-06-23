@@ -305,16 +305,7 @@ export function UserManagement() {
           </span>
         </div>
         
-        {/* Общая статистика */}
-        <div className="flex items-center space-x-4">
-          <div className="text-center">
-            <div className="text-lg font-bold text-blue-600">{boardUsers.length}</div>
-            <div className="text-xs text-gray-500 uppercase">ПОЛЬЗОВАТЕЛЕЙ</div>
-          </div>
-          <div className="text-center">
-            <div className="text-lg font-bold text-green-600">{totalCompleted}</div>
-            <div className="text-xs text-gray-500 uppercase">ВЫПОЛНЕНО</div>
-          </div>
+
           {currentUser?.role === 'admin' && (
             <button
               onClick={() => setShowAddUser(true)}
