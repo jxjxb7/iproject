@@ -21,6 +21,7 @@ import {
   Download,
   Pause,
   Edit,
+  Clock,
 } from 'lucide-react';
 import { Task, User as UserType, Comment, Attachment, VoiceMessage } from '../types';
 import { useApp } from '../context/AppContext';
@@ -42,6 +43,7 @@ export function TaskModal({ task, isOpen, onClose, defaultStatus = 'created' }: 
     priority: 'medium' as Task['priority'],
     assigneeIds: [] as string[],
     deadline: '',
+    deadlineTime: '',
     isPinned: false,
   });
   const [newComment, setNewComment] = useState('');
@@ -64,13 +66,15 @@ export function TaskModal({ task, isOpen, onClose, defaultStatus = 'created' }: 
 
   useEffect(() => {
     if (task) {
+      const taskDeadline = task.deadline ? new Date(task.deadline) : null;
       setFormData({
         title: task.title,
         description: task.description,
         status: task.status,
         priority: task.priority,
         assigneeIds: task.assigneeIds || [],
-        deadline: task.deadline ? format(new Date(task.deadline), 'yyyy-MM-dd') : '',
+        deadline: taskDeadline ? format(taskDeadline, 'yyyy-MM-dd') : '',
+        deadlineTime: taskDeadline ? format(taskDeadline, 'HH:mm') : '',
         isPinned: task.isPinned,
       });
       setComments(task.comments);
@@ -84,6 +88,7 @@ export function TaskModal({ task, isOpen, onClose, defaultStatus = 'created' }: 
         priority: 'medium',
         assigneeIds: currentUser?.id ? [currentUser.id] : [],
         deadline: '',
+        deadlineTime: '',
         isPinned: false,
       });
       setComments([]);
@@ -99,13 +104,19 @@ export function TaskModal({ task, isOpen, onClose, defaultStatus = 'created' }: 
   // Отслеживание изменений
   useEffect(() => {
     if (task) {
+      const taskDeadline = task.deadline ? new Date(task.deadline) : null;
+      const currentDeadlineString = formData.deadline && formData.deadlineTime 
+        ? `${formData.deadline}T${formData.deadlineTime}:00.000Z`
+        : '';
+      const originalDeadlineString = taskDeadline ? taskDeadline.toISOString() : '';
+      
       const hasChanges = 
         formData.title !== task.title ||
         formData.description !== task.description ||
         formData.status !== task.status ||
         formData.priority !== task.priority ||
         JSON.stringify(formData.assigneeIds) !== JSON.stringify(task.assigneeIds || []) ||
-        formData.deadline !== (task.deadline ? format(new Date(task.deadline), 'yyyy-MM-dd') : '') ||
+        currentDeadlineString !== originalDeadlineString ||
         formData.isPinned !== task.isPinned ||
         newAttachments.length > 0 ||
         voiceMessages.length !== (task.voiceMessages || []).length ||
@@ -117,6 +128,7 @@ export function TaskModal({ task, isOpen, onClose, defaultStatus = 'created' }: 
         formData.description !== '' ||
         formData.assigneeIds.length !== (currentUser?.id ? 1 : 0) ||
         formData.deadline !== '' ||
+        formData.deadlineTime !== '' ||
         formData.isPinned !== false ||
         newAttachments.length > 0 ||
         voiceMessages.length > 0;
@@ -130,6 +142,22 @@ export function TaskModal({ task, isOpen, onClose, defaultStatus = 'created' }: 
     if (!formData.title.trim()) {
       alert('Название задачи не может быть пустым');
       return;
+    }
+
+    // Проверка даты и времени
+    if (formData.deadline || formData.deadlineTime) {
+      if (!formData.deadline || !formData.deadlineTime) {
+        alert('Необходимо указать и дату, и время дедлайна');
+        return;
+      }
+
+      const deadlineDateTime = new Date(`${formData.deadline}T${formData.deadlineTime}`);
+      const now = new Date();
+      
+      if (deadlineDateTime <= now) {
+        alert('Дата и время дедлайна не могут быть в прошлом');
+        return;
+      }
     }
     
     // Обработка вложений с ограничением размера (5MB)
@@ -152,10 +180,16 @@ export function TaskModal({ task, isOpen, onClose, defaultStatus = 'created' }: 
         url: URL.createObjectURL(file),
       }))
     ];
+
+    // Формирование даты дедлайна
+    let deadlineISO: string | undefined;
+    if (formData.deadline && formData.deadlineTime) {
+      deadlineISO = new Date(`${formData.deadline}T${formData.deadlineTime}`).toISOString();
+    }
     
     const taskData = {
       ...formData,
-      deadline: formData.deadline ? new Date(formData.deadline).toISOString() : undefined,
+      deadline: deadlineISO,
       assigneeIds: formData.assigneeIds,
       creatorId: currentUser?.id || '',
       boardId: task?.boardId || currentBoardId || '1',
@@ -395,6 +429,11 @@ export function TaskModal({ task, isOpen, onClose, defaultStatus = 'created' }: 
 
   const getTodayDate = () => {
     return new Date().toISOString().split('T')[0];
+  };
+
+  const getCurrentTime = () => {
+    const now = new Date();
+    return now.toTimeString().slice(0, 5);
   };
 
   // Функция для отображения форматированного текста без markdown символов
@@ -839,13 +878,28 @@ export function TaskModal({ task, isOpen, onClose, defaultStatus = 'created' }: 
                 <label className="block text-sm font-medium text-gray-700 mb-2 uppercase">
                   СРОК ВЫПОЛНЕНИЯ
                 </label>
-                <input
-                  type="date"
-                  value={formData.deadline}
-                  min={getTodayDate()}
-                  onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#b6c2fc] focus:border-[#b6c2fc] transition-colors text-right"
-                />
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-4 h-4 text-gray-500" />
+                    <input
+                      type="date"
+                      value={formData.deadline}
+                      min={getTodayDate()}
+                      onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+                      className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b6c2fc] focus:border-[#b6c2fc] transition-colors"
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-4 h-4 text-gray-500" />
+                    <input
+                      type="time"
+                      value={formData.deadlineTime}
+                      min={formData.deadline === getTodayDate() ? getCurrentTime() : undefined}
+                      onChange={(e) => setFormData({ ...formData, deadlineTime: e.target.value })}
+                      className="flex-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b6c2fc] focus:border-[#b6c2fc] transition-colors"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 

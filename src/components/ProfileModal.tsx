@@ -202,28 +202,28 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           </button>
         </div>
 
-        {/* Вкладки */}
-        <div className="flex border-b border-gray-200">
+        {/* Вкладки с дизайном как в AuthPage */}
+        <div className="flex">
           <button
             onClick={() => setActiveTab('profile')}
-            className={`flex-1 py-3 px-6 text-center font-medium transition-colors ${
+            className={`flex-1 py-4 px-6 text-center font-medium transition-all ${
               activeTab === 'profile'
                 ? 'text-white'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
-            style={{ backgroundColor: activeTab === 'profile' ? '#b6c2fc' : 'transparent' }}
+            style={{ backgroundColor: activeTab === 'profile' ? '#B6C2FC' : '#A4D2FC' }}
           >
             <User className="w-4 h-4 inline mr-2" />
             ПРОФИЛЬ
           </button>
           <button
             onClick={() => setActiveTab('stats')}
-            className={`flex-1 py-3 px-6 text-center font-medium transition-colors ${
+            className={`flex-1 py-4 px-6 text-center font-medium transition-all ${
               activeTab === 'stats'
                 ? 'text-white'
                 : 'text-gray-600 hover:bg-gray-100'
             }`}
-            style={{ backgroundColor: activeTab === 'stats' ? '#b6c2fc' : 'transparent' }}
+            style={{ backgroundColor: activeTab === 'stats' ? '#B6C2FC' : '#A4D2FC' }}
           >
             <BarChart3 className="w-4 h-4 inline mr-2" />
             СТАТИСТИКА

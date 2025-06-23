@@ -31,7 +31,7 @@ interface HeaderProps {
 }
 
 export function Header({ currentView, onViewChange, onCreateTask }: HeaderProps) {
-  const { currentUser, logout, boards, currentBoardId, setCurrentBoard, getCurrentBoardTasks, deleteBoard, generateBoardLink, notifications, updateBoard, undoLastAction, redoLastAction, canUndo, canRedo } = useApp();
+  const { currentUser, logout, boards, currentBoardId, setCurrentBoard, getCurrentBoardTasks, deleteBoard, generateBoardLink, notifications, updateBoard, undoLastAction, redoLastAction, can Undo, canRedo } = useApp();
   const [showBoardDropdown, setShowBoardDropdown] = useState(false);
   const [showBoardModal, setShowBoardModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -182,7 +182,7 @@ export function Header({ currentView, onViewChange, onCreateTask }: HeaderProps)
           </div>
 
           {/* Селектор досок с адаптивной шириной */}
-          <div className="relative flex-1 max-w-xs board-dropdown-container">
+          <div className="relative flex-1 max-w-xs board-dropdown-container" data-tour="board-selector">
             <button
               onClick={() => setShowBoardDropdown(!showBoardDropdown)}
               className="flex items-center space-x-2 px-3 md:px-4 py-2 rounded-lg transition-colors w-full text-left bg-white border border-gray-200 hover:border-gray-300"
@@ -313,7 +313,7 @@ export function Header({ currentView, onViewChange, onCreateTask }: HeaderProps)
           </div>
 
           {/* Навигация для десктопа */}
-          <nav className="hidden md:flex items-center space-x-1">
+          <nav className="hidden md:flex items-center space-x-1" data-tour="navigation">
             <button
               onClick={() => onViewChange('board')}
               className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
@@ -380,6 +380,7 @@ export function Header({ currentView, onViewChange, onCreateTask }: HeaderProps)
         <div className="flex items-center space-x-2 md:space-x-4 flex-shrink-0">
           <button
             onClick={onCreateTask}
+            data-tour="create-task"
             className="flex items-center space-x-1 md:space-x-2 text-white px-3 md:px-4 py-2 rounded-lg transition-all font-medium"
             style={{ backgroundColor: '#a4d2fc' }}
           >
@@ -387,7 +388,7 @@ export function Header({ currentView, onViewChange, onCreateTask }: HeaderProps)
             <span className="hidden sm:inline uppercase text-sm md:text-base">СОЗДАТЬ ЗАДАЧУ</span>
           </button>
 
-          <div className="relative notification-panel-container">
+          <div className="relative notification-panel-container" data-tour="notifications">
             <button 
               onClick={() => setShowNotifications(!showNotifications)}
               className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
@@ -406,7 +407,7 @@ export function Header({ currentView, onViewChange, onCreateTask }: HeaderProps)
             )}
           </div>
 
-          <div className="flex items-center space-x-2 md:space-x-3">
+          <div className="flex items-center space-x-2 md:space-x-3" data-tour="profile">
             <button
               onClick={() => setShowProfileModal(true)}
               className="flex items-center space-x-2 hover:bg-gray-100 rounded-lg p-2 transition-colors"
